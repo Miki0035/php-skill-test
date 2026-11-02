@@ -15,6 +15,24 @@
 <main class="container py-5">
 
     <h2 class="mb-4">Product Inventory</h2>
+    {{-- Success message --}}
+    @if(session('success'))
+        <div class="alert alert-success">
+            {{ session('success') }}
+        </div>
+    @endif
+
+    {{-- Validation errors --}}
+    @if($errors->any())
+        <div class="alert alert-danger">
+            <ul class="mb-0">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
       {{-- Product submission form --}}
     <div class="card mb-5">
         <div class="card-header">
@@ -136,6 +154,21 @@
 
 </tbody>
 
+
+          <tfoot>
+        <tr>
+            <td colspan="4" class="text-end">
+                <strong>Grand Total:</strong>
+            </td>
+            <td colspan="2">
+                <strong id="grandTotal">
+                    {{ number_format($grandTotal, 2) }}
+                </strong>
+            </td>
+        </tr>
+    </tfoot>
+</table>
+</div>
 
 </main>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
