@@ -60,4 +60,24 @@ class ProductController extends Controller
     ], 201);
     }
 
+    // retrieves and displayes product
+    public function index()
+    {
+        $products = $this->getProducts();
+
+        // Sort by date, newest first
+        usort($products, function ($a, $b) {
+            return strtotime($b['created_at']) <=> strtotime($a['created_at']);
+        });
+
+        // Calculate grand total
+        $grandTotal = 0;
+
+        foreach ($products as $product) {
+            $grandTotal += $product['quantity'] * $product['price'];
+        }
+
+        return view('index', compact('products', 'grandTotal'));
+    }
+
 }
