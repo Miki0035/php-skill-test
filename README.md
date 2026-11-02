@@ -7,3 +7,7 @@ A simple application that stores data in JSON file. Features include
 - Create a product.
 - View stored JSON data as table form.
 - Update data.
+
+## Link to repo
+
+👉 [Github Repo](https://github.com/Miki0035/php-skill-test)
