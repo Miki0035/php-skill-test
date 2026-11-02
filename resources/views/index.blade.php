@@ -139,6 +139,107 @@
 
 </main>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+<script>
+    const productForm = document.getElementById('productForm');
+    const productTable = document.getElementById('productTable');
+    const message = document.getElementById('message');
+
+    const updateUrl = "{{ route('products.update', ['id' => '__ID__']) }}";
+
+    const csrfToken = document.querySelector('input[name="_token"]').value;
+
+
+    // Display success/error messages
+    function showMessage(text, type = 'success') {
+
+        message.textContent = '';
+
+        const alert = document.createElement('div');
+
+        alert.className = `alert alert-${type}`;
+        alert.textContent = text;
+
+        message.appendChild(alert);
+
+    }
+
+
+    // Format date
+    function formatDate(dateString) {
+
+        return new Date(dateString.replace(' ', 'T')).toLocaleString();
+
+    }
+
+
+    // Calculate grand total
+    function updateGrandTotal() {
+
+        const rows = productTable.querySelectorAll('tr');
+
+        let grandTotal = 0;
+
+        rows.forEach(row => {
+
+            if (row.cells.length < 6) return;
+
+            const quantity = Number(row.cells[1].textContent);
+            const price = Number(row.cells[2].textContent);
+
+            grandTotal += quantity * price;
+
+        });
+
+        document.getElementById('grandTotal').textContent =
+            grandTotal.toFixed(2);
+
+    }
+
+
+    // Render a product row
+    function renderProductRow(row, product) {
+
+        row.dataset.id = product.id;
+
+        row.innerHTML = '';
+
+        const values = [
+            product.name,
+            product.quantity,
+            Number(product.price).toFixed(2),
+            formatDate(product.created_at),
+            (product.quantity * product.price).toFixed(2)
+        ];
+
+        values.forEach((value, index) => {
+
+            const cell = document.createElement('td');
+
+            cell.textContent = value;
+
+            if (index === 3) {
+                cell.dataset.createdAt = product.created_at;
+            }
+
+            row.appendChild(cell);
+
+        });
+
+        const actionCell = document.createElement('td');
+
+        const editButton = document.createElement('button');
+
+        editButton.type = 'button';
+        editButton.className = 'btn btn-sm btn-outline-primary edit-btn';
+        editButton.textContent = 'Edit';
+
+        actionCell.appendChild(editButton);
+
+        row.appendChild(actionCell);
+
+    }
+
+</script>
 </body>
 </html>
 
