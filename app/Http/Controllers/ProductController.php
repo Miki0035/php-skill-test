@@ -80,4 +80,48 @@ class ProductController extends Controller
         return view('index', compact('products', 'grandTotal'));
     }
 
+     // Update an existing product
+    public function update(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'quantity' => 'required|integer|min:1',
+            'price' => 'required|numeric|min:0',
+        ]);
+
+        $products = $this->getProducts();
+
+
+        $found = false;
+        $updatedProduct = null;
+
+        foreach ($products as &$product) {
+            if ($product['id'] === $id) {
+                $product['name'] = $validated['name'];
+                $product['quantity'] = $validated['quantity'];
+                $product['price'] = $validated['price'];
+                // updated product for response
+                $updatedProduct = $product;
+                $found = true;
+
+                break;
+            }
+        }
+
+        unset($product);
+
+        if (!$found) {
+            return response()->json([
+            'message' => 'Product not found.'
+            ], 404);
+        }
+
+        $this->saveProducts($products);
+        
+        return response()->json([
+            'message' => 'Product updated successfully!',
+            'product' => $updatedProduct,
+        ]);
+    }
+
 }
