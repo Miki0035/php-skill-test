@@ -239,6 +239,27 @@
 
     }
 
+    // Add new product to the table
+    function addProductToTable(product) {
+
+        const emptyRow = productTable.querySelector('tr');
+
+        if (emptyRow && emptyRow.cells.length === 1) {
+            emptyRow.remove();
+        }
+
+        const row = document.createElement('tr');
+
+        renderProductRow(row, product);
+
+        // Add newest product at the top
+        productTable.prepend(row);
+
+        updateGrandTotal();
+
+    }
+
+
 </script>
 </body>
 </html>
