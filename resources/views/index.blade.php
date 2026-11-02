@@ -259,6 +259,218 @@
 
     }
 
+    // AJAX form submission
+    productForm.addEventListener('submit', async function(e) {
+
+        e.preventDefault();
+
+        const formData = new FormData(productForm);
+
+        try {
+
+            const response = await fetch("{{ route('products.store') }}", {
+
+                method: 'POST',
+
+                headers: {
+                    'Accept': 'application/json'
+                },
+
+                body: formData
+
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw data;
+            }
+
+            showMessage(data.message);
+
+            addProductToTable(data.product);
+
+            productForm.reset();
+
+        } catch(error) {
+
+            showMessage(
+                error.errors
+                    ? Object.values(error.errors).flat().join(' ')
+                    : error.message || 'Something went wrong.',
+                'danger'
+            );
+
+        }
+
+    });
+
+
+    // Handle Edit button clicks
+    productTable.addEventListener('click', function(e) {
+
+        if (!e.target.classList.contains('edit-btn')) {
+            return;
+        }
+
+        const row = e.target.closest('tr');
+
+        // Prevent opening multiple edit forms
+        if (row.querySelector('.save-btn')) {
+            return;
+        }
+
+        // Get existing values
+        const product = {
+            id: row.dataset.id,
+            name: row.cells[0].textContent,
+            quantity: row.cells[1].textContent,
+            price: row.cells[2].textContent,
+            created_at: row.cells[3].dataset.createdAt
+        };
+
+
+        // Replace product name with input
+        const nameInput = document.createElement('input');
+
+        nameInput.type = 'text';
+        nameInput.className = 'form-control';
+        nameInput.value = product.name;
+        nameInput.required = true;
+
+        row.cells[0].replaceChildren(nameInput);
+
+
+        // Replace quantity with input
+        const quantityInput = document.createElement('input');
+
+        quantityInput.type = 'number';
+        quantityInput.className = 'form-control';
+        quantityInput.min = '1';
+        quantityInput.value = product.quantity;
+        quantityInput.required = true;
+
+        row.cells[1].replaceChildren(quantityInput);
+
+
+        // Replace price with input
+        const priceInput = document.createElement('input');
+
+        priceInput.type = 'number';
+        priceInput.className = 'form-control';
+        priceInput.min = '0';
+        priceInput.step = '0.01';
+        priceInput.value = product.price;
+        priceInput.required = true;
+
+        row.cells[2].replaceChildren(priceInput);
+
+
+        // Replace Edit button with Save and Cancel
+        const actionCell = row.cells[5];
+
+        actionCell.replaceChildren();
+
+        const saveButton = document.createElement('button');
+
+        saveButton.type = 'button';
+        saveButton.className = 'btn btn-sm btn-success save-btn me-1';
+        saveButton.textContent = 'Save';
+
+        const cancelButton = document.createElement('button');
+
+        cancelButton.type = 'button';
+        cancelButton.className = 'btn btn-sm btn-secondary cancel-btn';
+        cancelButton.textContent = 'Cancel';
+
+        actionCell.append(saveButton, cancelButton);
+
+
+        // Cancel editing
+        cancelButton.addEventListener('click', function() {
+
+            renderProductRow(row, product);
+
+        });
+
+
+        // Save edited product using AJAX
+        saveButton.addEventListener('click', async function() {
+
+            const updatedProduct = {
+                name: nameInput.value.trim(),
+                quantity: quantityInput.value,
+                price: priceInput.value
+            };
+
+            if (
+                !updatedProduct.name ||
+                !quantityInput.checkValidity() ||
+                !priceInput.checkValidity()
+            ) {
+
+                showMessage('Please enter valid product information.', 'danger');
+
+                return;
+
+            }
+
+            saveButton.disabled = true;
+
+            try {
+
+                const response = await fetch(
+                    updateUrl.replace('__ID__', encodeURIComponent(product.id)),
+                    {
+
+                        method: 'PUT',
+
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': csrfToken
+                        },
+
+                        body: JSON.stringify(updatedProduct)
+
+                    }
+                );
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw data;
+                }
+
+                // Update existing row without refreshing
+                renderProductRow(row, data.product);
+
+                // Recalculate grand total
+                updateGrandTotal();
+
+                showMessage(data.message);
+
+            } catch(error) {
+
+                showMessage(
+                    error.errors
+                        ? Object.values(error.errors).flat().join(' ')
+                        : error.message || 'Unable to update product.',
+                    'danger'
+                );
+
+                saveButton.disabled = false;
+
+            }
+
+        });
+
+    });
+
+
+    // Calculate initial grand total
+    updateGrandTotal();
+
 
 </script>
 </body>
